@@ -16,13 +16,25 @@ body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
   overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 
 }
 * {
   box-sizing: border-box;
+
 }
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+@media (max-width: 768px) {
+  /* Adjustments for smaller screens */
+  .menu-container {
+      flex-wrap: wrap;
+  }
+  .menu-item {
+      width: 100%; /* Make menu items stack */
   }
 }

@@ -35,7 +35,7 @@ const ThemeToggler = () => {
             : " transition-transform translate-x-8"
         }`}
       ></div>
-      <FaSun className="fill-white ml-auto w-[15px] h-[15px]"></FaSun>
+      <FaSun className="fill-white w-[15px] h-[15px] ml-auto"></FaSun>
     </div>
   );
 };

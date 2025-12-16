@@ -32,15 +32,23 @@
       ],
       "@/helpers/*": [
         "app/helpers/*"
+      ],
+      "@/types/*": [
+        "app/types/*"
+      ],
+        "@/slice/*": [
+        "app/lib/features*"
       ]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "app/types/custom.d.ts",
+    "**/*.d.ts",
+    "app/types/**/*.d.ts",
     "next-env.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "prisma"
   ],
   "exclude": [
     "node_modules"

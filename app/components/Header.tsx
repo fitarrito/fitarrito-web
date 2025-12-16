@@ -1,13 +1,15 @@
 "use client";
-import React, { useEffect, useRef, useLayoutEffect } from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import ThemeToggler from "./ThemeToggler";
 import { useTheme } from "next-themes";
 import gsap from "gsap";
 import textImage from "../images/fitarrito.svg";
-
+import CartDrawer from "@/components/CartDrawer";
 import logo from "../images/logo.svg";
+import { FaShoppingCart } from "react-icons/fa";
+import { useAppSelector } from "app/lib/hooks";
+import { selectTotalQuantity } from "app/lib/features/cartSlice";
 
 // Typ für einen einzelnen Menüpunkt
 interface MenuItem {
@@ -20,6 +22,8 @@ interface MenuItem {
 // Header-Komponente
 const Header: React.FC = () => {
   const navRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const totalQuantity = useAppSelector(selectTotalQuantity);
   const prevScrollY = useRef(0);
   const useIsomorphicLayoutEffect =
     typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -82,17 +86,17 @@ const Header: React.FC = () => {
     <header className="sticky top-0 z-50">
       <div
         ref={navRef}
-        className={`fixed top-0 left-0 z-50 w-full md:flex justify-between items-center bg-white`}
+        className={`fixed top-0 left-0 z-50 w-full items-center bg-white`}
       >
         {/* Hintergrund für das aufklappbare Menü */}
 
         <div className="flex justify-center">
-          <div className=" bg-nav-color-dark w-screen md:justify-between xs:justify-center shadow-customShadow-md laptop:w-[80vw] text-white inline-flex items-center py-1 mobile:py-3 px-5 laptop:rounded-full laptop:my-4  laptop:inline-flex">
+          <div className=" bg-nav-color-dark w-screen justify-between  shadow-customShadow-md laptop:w-[80vw] text-white inline-flex items-center py-1 mobile:py-3 px-1 md:px-4 lg laptop:rounded-full laptop:my-4  laptop:inline-flex">
             <div className="flex items-center">
               <div>
                 <Link
                   href="/"
-                  className=" transition ease-in-out duration-150  px-3 py-1 justify-center mobile:px-3 mobile:py-2 rounded-xl text-xs mobile:text-base min-w-[50px] mobile:w-[100px]  flex"
+                  className=" transition ease-in-out duration-150  px-3 py-1 justify-center mobile:px-3 mobile:py-2 rounded-xl text-xs mobile:text-base min-w-[50px] mobile:w-[50px]  flex"
                 >
                   <Image src={logo} alt="UTP-Logo" width={55} height={55} />
                 </Link>
@@ -105,28 +109,32 @@ const Header: React.FC = () => {
                   <Image
                     src={textImage}
                     alt="UTP-Logo"
-                    width={150}
-                    height={100}
+                    width={130}
+                    height={90}
                   />
                 </Link>
               </div>
             </div>
 
-            <div className="z-40 flex lg:block md:block sm:block items-center gap-3 tablet:inline-flex  xs:hidden">
-              {/* <li className="py-2 list-none">
-                <button className="bg-customTheme transition ease-in-out duration-150  px-5 py-2  mobile:px-3 mobile:py-2 rounded-lg text-xs mobile:text-base">
-                  <Link href="/">Login</Link>
-                </button>
-              </li> */}
-              <div className="max-mobile:hidden">
-                <ThemeToggler />
-              </div>
+            <div className="z-40 flex flex-row gap-3">
+              <button
+                onClick={() => setIsOpen(true)}
+                className="px-3 py-2 bg-customTheme rounded-3xl flex flex-row items-center justify-between w-16"
+              >
+                <FaShoppingCart className="text-white text-lg" />
+                <p className="text-white text-sm fontWeight-bold">
+                  {totalQuantity}
+                </p>
+              </button>
+
+              {/* <ThemeToggler /> */}
             </div>
           </div>
         </div>
 
         {/* Aufklappbares Menü */}
       </div>
+      {isOpen ? <CartDrawer isOpen={isOpen} setIsOpen={setIsOpen} /> : null}
     </header>
   );
 };

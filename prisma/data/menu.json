@@ -1,0 +1,201 @@
+{
+  "proteinVariants": [
+    {
+      "name": "Veggies Only",
+      "type": "veg",
+      "imageUrl": "/images/menuimages/proteinImages/VeggiesIcon.svg",
+      "nutrient": {
+        "regular": {
+          "cals": "300.0",
+          "protein": "10.0g",
+          "fat": "8.0g",
+          "carbs": "45.0g",
+          "price": "20"
+        },
+        "jumbo": {
+          "cals": "400.0",
+          "protein": "15.0g",
+          "fat": "12.0g",
+          "carbs": "60.0g",
+          "price": "40"
+        }
+      }
+    },
+    {
+      "name": "Chicken",
+      "type": "non-veg",
+      "imageUrl": "/images/menuimages/proteinImages/ChickenIcon.svg",
+      "nutrient": {
+        "regular": {
+          "cals": "562.5",
+          "protein": "37.5g",
+          "fat": "22.5g",
+          "carbs": "45.0g",
+          "price": "40"
+        },
+        "jumbo": {
+          "cals": "750",
+          "protein": "50g",
+          "fat": "30g",
+          "carbs": "60g",
+          "price": "100"
+        }
+      }
+    },
+    {
+      "name": "Paneer",
+      "type": "veg",
+      "imageUrl": "/images/menuimages/proteinImages/PaneerIcon.svg",
+      "nutrient": {
+        "regular": {
+          "cals": "465.0",
+          "protein": "22.5g",
+          "fat": "21.0g",
+          "carbs": "48.0g",
+          "price": "30"
+        },
+        "jumbo": {
+          "cals": "620",
+          "protein": "30g",
+          "fat": "28g",
+          "carbs": "65g",
+          "price": "80"
+        }
+      }
+    },
+    {
+      "name": "Mushroom",
+      "type": "veg",
+      "imageUrl": "/images/menuimages/proteinImages/MushroomIcon.svg",
+      "nutrient": {
+        "regular": {
+          "cals": "465.0",
+          "protein": "22.5g",
+          "fat": "21.0g",
+          "carbs": "48.0g",
+          "price": "20"
+        },
+        "jumbo": {
+          "cals": "620",
+          "protein": "30g",
+          "fat": "28g",
+          "carbs": "65g",
+          "price": "60"
+        }
+      }
+    },
+    {
+      "name": "Brocolli",
+      "type": "veg",
+      "imageUrl": "/images/menuimages/proteinImages/Brocolli.svg",
+      "nutrient": {
+        "regular": {
+          "cals": "465.0",
+          "protein": "22.5g",
+          "fat": "21.0g",
+          "carbs": "48.0g",
+          "price": "40"
+        },
+        "jumbo": {
+          "cals": "620",
+          "protein": "30g",
+          "fat": "28g",
+          "carbs": "65g",
+          "price": "100"
+        }
+      }
+    },
+    {
+      "name": "Mutton",
+      "type": "non-veg",
+      "imageUrl": "/images/menuimages/proteinImages/MeatIcon.svg",
+      "nutrient": {
+        "regular": {
+          "cals": "562.5",
+          "protein": "33.0g",
+          "fat": "25.5g",
+          "carbs": "45.0g",
+          "price": "100"
+        },
+        "jumbo": {
+          "cals": "750",
+          "protein": "45g",
+          "fat": "35g",
+          "carbs": "60g",
+          "price": "180"
+        }
+      }
+    },
+    {
+      "name": "Fish",
+      "type": "non-veg",
+      "imageUrl": "/images/menuimages/proteinImages/FishIcon.svg",
+      "nutrient": {
+        "regular": {
+          "cals": "562.5",
+          "protein": "37.5g",
+          "fat": "22.5g",
+          "carbs": "45.0g",
+          "price": "60"
+        },
+        "jumbo": {
+          "cals": "750",
+          "protein": "50g",
+          "fat": "30g",
+          "carbs": "60g",
+          "price": "120"
+        }
+      }
+    }
+  ],
+  "menuItems": [
+    {
+      "title": "Burrito",
+      "description": "Tortilla roll infused with selected Protein and veggies",
+      "price": 80,
+      "category": "Burrito",
+      "imageUrl": "/images/menuimages/ChickenBurrito.svg",
+      "hasProteinVariants": true
+    },
+    {
+      "title": "Burrito Bowl",
+      "description": "Tortilla roll infused with chicken and veggies",
+      "price": 120,
+      "category": "Bowl",
+      "imageUrl": "/images/menuimages/BBQChickenSalad.svg",
+      "hasProteinVariants": true
+    },
+    {
+      "title": "Salad",
+      "description": "Tomato Salad & Carrot",
+      "price": 180,
+      "category": "Salad",
+      "imageUrl": "/images/menuimages/PaneerTeriyakiSalad.svg",
+      "hasProteinVariants": true
+    },
+    {
+      "title": "Nachos Fiesta",
+      "description": "Tomato Salad & Carrot",
+      "price": 180,
+      "category": "Nachos",
+      "imageUrl": "/images/menuimages/fiesta.svg",
+      "hasProteinVariants": true
+    },
+    {
+      "title": "Taco",
+      "description": "Tomato Salad & Carrot",
+      "price": 80,
+      "category": "Taco",
+      "imageUrl": "/images/menuimages/ChickenTaco.svg",
+      "hasProteinVariants": true
+    },
+    {
+      "title": "Veg Quesadillas",
+      "description": "A crispy tortilla filled with cheese, beans, and vegetables.",
+      "price": 160,
+      "category": "Quesadillas",
+      "imageUrl": "/images/menuimages/VegQuesadilla.svg",
+      "hasProteinVariants": true
+    }
+  ]
+}

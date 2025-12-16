@@ -1,45 +1,65 @@
 "use client";
-import React, { ReactNode, useState, useRef } from "react";
+import React, { ReactNode, useState, useEffect, useRef, useMemo } from "react";
 import styled from "styled-components";
 import { motion } from "motion/react";
-import { FaStar } from "react-icons/fa";
-import Link from "next/link";
-import { Container, ContentWithPaddingXl } from "@/components/misc/Layout";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi"; // Import icons
+import { useAppSelector } from "app/lib/hooks";
 
+import { Container, ContentWithPaddingXl } from "@/components/misc/Layout";
+import LoaderText from "@/components/ImageSkeleton";
 import { SectionHeading } from "@/components/misc/Heading";
 import SvgDecoratorBlob2 from "@/images/svg-decorator-blob-7.svg";
 import Image from "next/image";
+import CartModal from "./CartModal"; // Import modal
 import tw from "twin.macro";
+import Modal from "react-modal";
+import CartDrawer from "@/components/CartDrawer";
+import DisplayTabContent from "@/components/DisplayTabContent";
+import ReactWindowVirtualGrid from "@/components/ReactWindowVirtualGrid";
+import { menuItem } from "@/types/types";
+// interface Card {
+//   imagesrc: { src: string };
+//   title: string;
+//   content: string;
+//   price: number | string;
+//   rating: number | string;
+//   reviews: string;
+//   url: string;
+//   category?: string;
 
-interface Card {
-  // Define the structure of a card
-  imagesrc: { src: string };
-  title: string;
-  content: string;
-  price: string;
-  rating: string;
-  reviews: string;
-  url: string;
-  // Add other card properties here
-}
+//   nutrient?: {
+//     regular: {
+//       cals: string;
+//       protein: string;
+//       fat: string;
+//       carbs: string;
+//       price: string;
+//     };
+//     jumbo: {
+//       cals: string;
+//       protein: string;
+//       fat: string;
+//       carbs: string;
+//       price: string;
+//     };
+//   };
+// }
 
 type Tabs = {
-  [key: string]: Card[]; // Keys are strings, values are arrays of `Card`
+  [key: string]: menuItem[]; // Keys are strings, values are arrays of `Card`
 };
 interface MenuProps {
   heading: ReactNode;
   tabs: Tabs;
 }
-interface CardImageContainerProps {
-  imagesrc: { src: string }; // Adjust the type as needed
-}
+
 interface TabControlProps {
   active: string; // Adjust the type as needed
 }
 
 const Header = tw(SectionHeading)``;
-
+const DecoratorBlob2 = styled.div`
+  ${tw`pointer-events-none -z-20 absolute left-0 bottom-0 h-80 w-80 opacity-15 transform -translate-x-60 text-primary-500`}
+`;
 const HeaderRow = tw.div`flex justify-between items-center flex-col xl:flex-row`;
 const TabsControl = tw.div`flex flex-wrap bg-gray-200 px-2 py-2 rounded leading-none mt-12 xl:mt-0`;
 const TabControl = styled.div<TabControlProps>`
@@ -50,162 +70,162 @@ const TabControl = styled.div<TabControlProps>`
   ${(props) =>
     props["active"] === "true" ? tw`bg-primary-500! text-gray-100!` : ""}
 `;
-const TabContent = tw(
-  motion.div
-)`flex overflow-x-auto scroll-mr-0 scroll-smooth snap-x snap-mandatory max-w-full relative`;
-const CardContainer = tw.div`mt-10 w-[90%] xs:w-auto sm:pr-10 md:pr-6 lg:pr-8 xs:pr-10 snap-start`;
-const Card = tw(
-  motion.div
-)`bg-gray-200 rounded-b  mx-auto sm:max-w-none sm:mx-0`;
+const TabContent = tw(motion.div)`max-w-full px-2`;
 
-const CardImageContainer = styled.div<CardImageContainerProps>`
-  background: url(${(props) => props.imagesrc.src}) no-repeat top center;
-  ${tw`h-64 xl:h-64 w-64 bg-center bg-cover relative rounded-t`}
-`;
-const CardRatingContainer = tw.div`leading-none absolute inline-flex bg-gray-100 bottom-0 left-0 ml-4 mb-4 rounded-full px-5 py-2 items-end`;
-const CardRating = styled.div`
-  ${tw`mr-1 text-sm xs:text-xs font-bold flex items-end`}
-  svg {
-    ${tw`w-4 h-4 fill-current text-orange-400 mr-1`}
-  }
-`;
+const VirtualTabContent = tw.div`max-w-full px-2`;
 
-const CardHoverOverlay = styled(motion.div)`
-  background-color: rgba(255, 255, 255, 0.5);
-  ${tw`absolute inset-0 justify-center items-center xs:hidden sm:flex`}
-`;
-const CardButton = tw.div`text-sm px-8 py-3 font-bold rounded bg-primary-500 text-gray-100 hocus:bg-primary-700 hocus:text-gray-200 focus:shadow-sm focus:outline-none transition duration-300`;
-
-const CardReview = tw.div`font-medium text-xs text-gray-600`;
-
-const CardText = tw.div`p-4 text-gray-900`;
-const CardTitle = tw.h5`text-base font-semibold group-hover:text-primary-500 xs:text-xs`;
-const CardContent = tw.p`mt-1 text-base xs:text-xxs font-medium text-gray-600`;
-const CardPrice = tw.p`text-xl font-bold`;
-const CardBuyButton = tw.div`flex flex-row items-center justify-between mt-4 sm:hidden`;
-
-const DecoratorBlob2 = styled.div`
-  ${tw`pointer-events-none -z-20 absolute left-0 bottom-0 h-80 w-80 opacity-15 transform -translate-x-60 text-primary-500`}
-`;
 export default function Menu({ heading, tabs }: MenuProps) {
-  const tabsKeys = Object.keys(tabs);
-
-  const [activeTab, setActiveTab] = useState(tabsKeys[0]);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-
-  const scroll = (direction: string) => {
-    console.log(scrollRef.current);
-    if (!scrollRef.current) return; // Prevent accessing null
-
-    if (direction === "left") {
-      scrollRef.current.scrollBy({ left: -300, behavior: "smooth" }); // Scroll left
-    } else {
-      scrollRef.current.scrollBy({ left: 300, behavior: "smooth" }); // Scroll right
+  const tabsKeys = useMemo(() => {
+    if (tabs && typeof tabs === "object") {
+      return Object.keys(tabs);
     }
+    return [];
+  }, [tabs]);
+  const menuType = useAppSelector((state) => state.menu.menuType);
+  const [activeTab, setActiveTab] = useState(tabsKeys[0] || "");
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isModalOpen, setModalOpen] = useState<boolean>(false);
+  const [quantity, setQuantity] = useState<number>(1);
+  const [selectedCard, setSelectedCard] = useState<menuItem | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleTabChange = (tabName: string) => {
+    setLoading(true);
+    setActiveTab(tabName);
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
   };
+  const openModal = (card: menuItem) => {
+    setSelectedCard(card);
+    setQuantity(1);
+    setModalOpen(true);
+  };
+
+  const incrementQuantity = () => setQuantity((prev) => prev + 1);
+  const decrementQuantity = () =>
+    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const nextRoot = document.getElementById("__next");
+      if (nextRoot) {
+        Modal.setAppElement("#__next");
+      }
+    }
+  }, []);
+  useEffect(() => {
+    if (tabsKeys.length > 0) {
+      setActiveTab(tabsKeys[0]); // Set the first tab as active
+    }
+  }, [menuType]);
+  useEffect(() => {
+    if (tabsKeys.length > 0 && !activeTab) {
+      setActiveTab(tabsKeys[0]); // Set the first tab as active
+    }
+  }, [tabsKeys, activeTab]);
+
   return (
     <Container>
       <ContentWithPaddingXl>
         <HeaderRow>
           <Header>{heading}</Header>
-          <TabsControl>
-            {Object.keys(tabs).map((tabName, index) => (
-              <TabControl
-                key={index}
-                active={activeTab === tabName ? "true" : "false"}
-                onClick={() => setActiveTab(tabName)}
-              >
-                {tabName}
-              </TabControl>
-            ))}
-          </TabsControl>
+          {menuType === "restaurant" && tabsKeys.length > 1 ? (
+            <TabsControl>
+              {tabs &&
+                typeof tabs === "object" &&
+                Object.entries(tabs).map(([tabName], index) => (
+                  <TabControl
+                    key={index}
+                    active={activeTab === tabName ? "true" : "false"}
+                    onClick={() => handleTabChange(tabName)}
+                  >
+                    {tabName}
+                  </TabControl>
+                ))}
+            </TabsControl>
+          ) : null}
         </HeaderRow>
-        <div className="relative flex items-center">
-          <button
-            onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-customTheme text-white p-2 rounded-full shadow-lg hover:bg-gray-700"
-          >
-            <FiChevronLeft size={24} />
-          </button>
-          <TabContent ref={scrollRef} className="w-[85%] mx-auto">
-            {tabs[activeTab].map((card, index) => (
-              <CardContainer key={index}>
-                <Card
-                  className="group"
-                  animate={"rest"}
-                  initial="rest"
-                  whileHover="hover"
-                >
-                  <Container>
-                    <CardImageContainer imagesrc={card.imagesrc}>
-                      <CardRatingContainer>
-                        <CardRating>
-                          <FaStar />
-                          {card.rating}
-                        </CardRating>
-                        <CardReview>({card.reviews})</CardReview>
-                      </CardRatingContainer>
-                      <CardHoverOverlay
-                        variants={{
-                          hover: {
-                            opacity: 1,
-                            height: "auto",
-                          },
-
-                          rest: {
-                            opacity: 0,
-                            height: 0,
-                          },
-                        }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <CardButton>
-                          <Link
-                            target="_blank"
-                            href={`https://wa.me/7373824646?text=${encodeURI(
-                              `Hi I would like to place order for this item from your shop. \n ${card.title}.`
-                            )}`}
-                          >
-                            Buy Now
-                          </Link>
-                        </CardButton>
-                      </CardHoverOverlay>
-                    </CardImageContainer>
-                  </Container>
-
-                  <CardText>
-                    <CardTitle>{card.title}</CardTitle>
-                    <CardContent>{card.content}</CardContent>
-                    <CardBuyButton>
-                      <CardPrice>{card.price}</CardPrice>
-                      <CardButton>
-                        <Link
-                          target="_blank"
-                          href={`https://wa.me/7373824646?text=${encodeURI(
-                            `Hi I would like to place order for this item from your shop. \n ${card.title}.`
-                          )}`}
-                        >
-                          Buy Now
-                        </Link>
-                      </CardButton>
-                    </CardBuyButton>
-                  </CardText>
-                </Card>
-              </CardContainer>
-            ))}
-          </TabContent>
-          <button
-            onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-customTheme text-white p-2 rounded-full shadow-lg hover:bg-gray-700"
-          >
-            <FiChevronRight size={24} />
-          </button>
+        <div className="relative flex items-center w-full">
+          {loading ? (
+            <TabContent ref={scrollRef} className="mx-auto">
+              <LoaderText />
+            </TabContent>
+          ) : (
+            <>
+              {tabs[activeTab]?.length > 0 ? (
+                tabs[activeTab].length > 20 ? (
+                  // Use virtual scrolling for large menus
+                  <VirtualTabContent className="mx-auto">
+                    <ReactWindowVirtualGrid<menuItem>
+                      keyExtractor={(item, idx) => `${item.title}-${idx}`}
+                      items={tabs[activeTab] as menuItem[]}
+                      renderItem={(card: menuItem, index: number) => (
+                        <DisplayTabContent
+                          card={card}
+                          isDrawerOpen={() => setIsDrawerOpen(true)}
+                          openModal={openModal}
+                          quantity={quantity}
+                          index={index}
+                          key={`${card.title}-${index}`}
+                        />
+                      )}
+                      containerHeight={600}
+                      itemHeight={400}
+                      gap={16}
+                      breakpoints={{
+                        sm: 1,
+                        md: 2,
+                        lg: 3,
+                        xl: 4,
+                      }}
+                    />
+                  </VirtualTabContent>
+                ) : (
+                  // Use regular grid for smaller menus
+                  <TabContent
+                    ref={scrollRef}
+                    className="mx-auto grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full"
+                  >
+                    {tabs &&
+                      typeof tabs === "object" &&
+                      Object.entries(tabs[activeTab]).map(([index, card]) => (
+                        <DisplayTabContent
+                          card={card}
+                          isDrawerOpen={() => setIsDrawerOpen(true)}
+                          openModal={openModal}
+                          quantity={quantity}
+                          index={parseInt(index)}
+                          key={`${card.title}-${index}`}
+                        />
+                      ))}
+                  </TabContent>
+                )
+              ) : (
+                <TabContent ref={scrollRef} className="mx-auto">
+                  <LoaderText />
+                </TabContent>
+              )}
+            </>
+          )}
         </div>
       </ContentWithPaddingXl>
 
       <DecoratorBlob2>
         <Image src={SvgDecoratorBlob2} alt="Blob-Logo" />
       </DecoratorBlob2>
+      <CartModal
+        isOpen={isModalOpen}
+        closeModal={() => setModalOpen(false)}
+        selectedCard={selectedCard}
+        quantity={quantity}
+        incrementQuantity={incrementQuantity}
+        decrementQuantity={decrementQuantity}
+      />
+      {isDrawerOpen ? (
+        <CartDrawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
+      ) : null}
     </Container>
   );
 }
