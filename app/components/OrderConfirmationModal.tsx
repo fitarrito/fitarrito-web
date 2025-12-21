@@ -1,8 +1,12 @@
 "use client";
 import React from "react";
-import Modal from "react-modal";
+import ReactModal from "react-modal";
 import tw from "twin.macro";
 import Image from "next/image";
+import Button from "./ui/Button";
+
+// Type assertion to fix TypeScript compatibility issue with react-modal
+const Modal = ReactModal as unknown as React.ComponentType<ReactModal.Props>;
 
 // Styled Components
 const ModalContainer = tw.div`rounded-3xl shadow-2xl max-w-md w-full relative overflow-hidden`;
@@ -12,8 +16,6 @@ const Heading = tw.h2`text-base font-bold text-white mb-2`;
 const SubText = tw.p`text-white text-sm  leading-relaxed`;
 const BoldText = tw.span`font-bold`;
 const ButtonContainer = tw.div`flex gap-4 mt-6`;
-const ViewDetailsButton = tw.button`flex-1 text-white font-bold py-3 px-6 rounded-full hover:opacity-90 transition-opacity uppercase text-sm`;
-const TrackOrderButton = tw.button`flex-1 font-bold py-3 px-6 rounded-full hover:opacity-90 transition-opacity uppercase text-sm`;
 
 interface OrderConfirmationModalProps {
   isOpen: boolean;
@@ -58,7 +60,7 @@ export default function OrderConfirmationModal({
         {/* Food Illustrations Section */}
         <FoodIllustrationsContainer>
           <Image
-            src="/food-illustration.png"
+            src="/order-confirmation-illustration.png"
             alt="Food illustration"
             fill
             style={{
@@ -82,23 +84,12 @@ export default function OrderConfirmationModal({
 
           {/* Buttons */}
           <ButtonContainer>
-            <ViewDetailsButton
-              onClick={onClose}
-              style={{
-                background: "linear-gradient(180deg, #FF4F40 0%, #E03E33 100%)",
-              }}
-            >
+            <Button variant="secondary" onClick={onClose} className="flex-1">
               VIEW DETAILS
-            </ViewDetailsButton>
-            <TrackOrderButton
-              onClick={onClose}
-              style={{
-                background: "linear-gradient(180deg, #fef5f5 0%, #f5e8e6 100%)",
-                color: "#8B4513",
-              }}
-            >
+            </Button>
+            <Button variant="primary" onClick={onClose} className="flex-1">
               TRACK ORDER
-            </TrackOrderButton>
+            </Button>
           </ButtonContainer>
         </ContentContainer>
       </ModalContainer>

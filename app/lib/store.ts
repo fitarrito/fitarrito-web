@@ -1,7 +1,8 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import cartSlice from "./features/cartSlice";
 import menuSlice from "./features/menuSlice";
-import trialSlice from "./features/slice"
+import trialSlice from "./features/slice";
+import authSlice from "./features/authSlice";
 import { persistReducer, persistStore } from "redux-persist";
 import { FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // Fix the storage import
@@ -11,13 +12,16 @@ const persistConfig = {
   key: "root",
   storage,
   version: 1, // Optional: Helps with migrations
+  // Don't persist auth state (security)
+  blacklist: ["auth"],
 };
 
 // 🔹 Combine Reducers
 const rootReducer = combineReducers({
   menu: menuSlice,
   cart: cartSlice,
-  trial:trialSlice
+  trial: trialSlice,
+  auth: authSlice,
 });
 
 // 🔹 Apply Persisted Reducer

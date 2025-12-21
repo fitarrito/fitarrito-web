@@ -7,9 +7,10 @@ import gsap from "gsap";
 import textImage from "../images/fitarrito.svg";
 import CartDrawer from "@/components/CartDrawer";
 import logo from "../images/logo.svg";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaUser } from "react-icons/fa";
 import { useAppSelector } from "app/lib/hooks";
 import { selectTotalQuantity } from "app/lib/features/cartSlice";
+import { useAuth } from "../lib/hooks/useAuth";
 
 // Typ für einen einzelnen Menüpunkt
 interface MenuItem {
@@ -25,6 +26,7 @@ const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const totalQuantity = useAppSelector(selectTotalQuantity);
   const prevScrollY = useRef(0);
+  const { isAuthenticated, signOut } = useAuth();
   const useIsomorphicLayoutEffect =
     typeof window !== "undefined" ? useLayoutEffect : useEffect;
   useIsomorphicLayoutEffect(() => {
@@ -116,7 +118,24 @@ const Header: React.FC = () => {
               </div>
             </div>
 
-            <div className="z-40 flex flex-row gap-3">
+            <div className="z-40 flex flex-row gap-3 items-center">
+              {isAuthenticated ? (
+                <button
+                  onClick={signOut}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-3xl flex flex-row items-center gap-2 text-white text-sm font-medium transition-colors"
+                >
+                  <FaUser className="text-white text-base" />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </button>
+              ) : (
+                <Link
+                  href="/signin"
+                  className="px-4 py-2 bg-customTheme hover:bg-primary-700 rounded-3xl flex flex-row items-center gap-2 text-white text-sm font-medium transition-colors"
+                >
+                  <FaUser className="text-white text-base" />
+                  <span className="hidden sm:inline">Sign In</span>
+                </Link>
+              )}
               <button
                 onClick={() => setIsOpen(true)}
                 className="px-3 py-2 bg-customTheme rounded-3xl flex flex-row items-center justify-between w-16"

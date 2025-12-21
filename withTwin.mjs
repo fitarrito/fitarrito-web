@@ -1,6 +1,5 @@
 // withTwin.mjs
 import babelPluginTypescript from "@babel/plugin-syntax-typescript";
-import babelPluginMacros from "babel-plugin-macros";
 import * as path from "path";
 import * as url from "url";
 // import babelPluginTwin from 'babel-plugin-twin'
@@ -42,7 +41,7 @@ export default function withTwin(
               sourceMaps: options.dev,
               plugins: [
                 // babelPluginTwin, // Optional
-                babelPluginMacros,
+                "babel-plugin-macros",
                 [babelPluginTypescript, { isTSX: true }],
               ],
             },

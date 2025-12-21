@@ -14,6 +14,7 @@ import {
   removeItem,
 } from "app/lib/features/cartSlice";
 import Image from "next/image";
+import Button from "./ui/Button";
 
 interface DrawerProps {
   isOpen: boolean;
@@ -51,8 +52,6 @@ const QuantityText = tw.span`px-3 py-1 bg-gray-100 text-gray-900 font-medium tex
 const DeleteButton = tw.button`ml-2 text-customTheme hover:text-red-500 text-xl`;
 
 const Footer = tw.div`absolute bottom-0 left-0 w-full p-4 bg-white border-t shadow-md flex items-center justify-between`;
-
-const ContinueButton = tw.button`w-[45%] md:w-[40%] bg-customTheme text-white rounded-lg py-2 text-sm font-semibold`;
 
 const DrawerComponent = ({ isOpen, setIsOpen }: DrawerProps) => {
   useEffect(() => {
@@ -148,14 +147,16 @@ const DrawerComponent = ({ isOpen, setIsOpen }: DrawerProps) => {
         {cartItems.length > 0 && (
           <Footer>
             <p tw="text-black text-sm font-bold">Total : ₹{totalAmt}</p>
-            <ContinueButton
+            <Button
+              variant="primary"
               onClick={() => {
                 setIsModalOpen(true);
                 //   setIsOpen(false);
               }}
+              className="w-[45%] md:w-[40%]"
             >
               Continue
-            </ContinueButton>
+            </Button>
           </Footer>
         )}
         <PlaceOrderForm

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation";
 import { ThemeProvider } from "./components/ThemeProvider";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -15,6 +16,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isAuthPage =
+    pathname?.startsWith("/signin") || pathname?.startsWith("/signup");
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -32,11 +37,15 @@ export default function RootLayout({
                 defaultTheme="system"
                 enableSystem
               >
-                <div className="flex flex-col min-h-screen">
-                  <Header />
-                  <main className="flex-1 p-3">{children}</main>
-                  <Footer />
-                </div>
+                {isAuthPage ? (
+                  children
+                ) : (
+                  <div className="flex flex-col min-h-screen">
+                    <Header />
+                    <main className="flex-1 p-3">{children}</main>
+                    <Footer />
+                  </div>
+                )}
               </ThemeProvider>
             </StyledComponentsRegistry>
           </PersistGate>

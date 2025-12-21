@@ -16,7 +16,7 @@ import type { AddressDetails } from "@/components/LocationPicker";
 // Tailwind Styled Components
 const Card = tw.div`bg-white w-full h-full overflow-y-auto`;
 const CardInput = tw.input`w-full border border-gray-200 p-3 rounded-lg focus:ring focus:ring-blue-300 focus:border-blue-400 mb-2 text-sm font-medium bg-gray-50 text-gray-900 placeholder-gray-400`;
-const SubmitOrderButton = tw.button`bg-customTheme text-white font-bold px-6 py-3 rounded-full shadow-md hover:bg-primary-700 hover:shadow-lg w-full transition-all duration-200`;
+const SubmitOrderButton = tw.button`bg-customTheme text-white font-bold px-6 py-3 rounded-full uppercase text-sm hover:opacity-90 w-full transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`;
 
 // Layout Components
 const DragHandleContainer = tw.div`flex justify-center pt-3 pb-2`;
@@ -197,22 +197,22 @@ export default function OrderModal({
           {/* Left Column - Input Fields */}
           <LeftColumn>
             <InputFieldsContainer>
-        <CardInput
-          type="text"
+              <CardInput
+                type="text"
                 placeholder="Full Name *"
-          value={name}
+                value={name}
                 onChange={(e) => {
                   setName(e.target.value);
                   if (errors.name) setErrors({ ...errors, name: "" });
                 }}
                 required
                 css={errors.name ? tw`border-red-500` : undefined}
-        />
+              />
               {errors.name && <ErrorMessage>{errors.name}</ErrorMessage>}
               <SpacedInput
-          type="tel"
+                type="tel"
                 placeholder="Phone Number *"
-          value={phone}
+                value={phone}
                 onChange={(e) => {
                   setPhone(e.target.value);
                   if (errors.phone) setErrors({ ...errors, phone: "" });
@@ -222,15 +222,15 @@ export default function OrderModal({
               />
               {errors.phone && <ErrorMessage>{errors.phone}</ErrorMessage>}
               <FlexFieldRow>
-        <CardInput
-          type="text"
+                <CardInput
+                  type="text"
                   placeholder="Floor"
                   value={floor}
                   onChange={(e) => setFloor(e.target.value)}
                   className="flex-1"
-        />
-        <CardInput
-          type="text"
+                />
+                <CardInput
+                  type="text"
                   placeholder="Apartment/Building Name"
                   value={apartment}
                   onChange={(e) => setApartment(e.target.value)}
@@ -254,14 +254,14 @@ export default function OrderModal({
               )}
               <CardTextarea
                 placeholder="Additional information for the Parcel Delivery (Optional)"
-          value={addressLine2}
-          onChange={(e) => setAddressLine2(e.target.value)}
+                value={addressLine2}
+                onChange={(e) => setAddressLine2(e.target.value)}
                 rows={3}
-        />
+              />
               <SpacedInput
-          type="text"
+                type="text"
                 placeholder="City *"
-          value={city}
+                value={city}
                 onChange={(e) => {
                   setCity(e.target.value);
                   if (errors.city) setErrors({ ...errors, city: "" });
@@ -294,7 +294,7 @@ export default function OrderModal({
               {/* Search bar */}
               <SearchInputContainer>
                 <SearchInput
-          type="text"
+                  type="text"
                   placeholder="Search location or enter postal code"
                   value={mapSearchQuery}
                   onChange={(e) => {
@@ -306,7 +306,7 @@ export default function OrderModal({
                       setPostalCode(extractedPostalCode);
                     }
                   }}
-        />
+                />
                 <SearchIcon
                   fill="none"
                   stroke="currentColor"

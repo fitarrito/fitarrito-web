@@ -36,8 +36,17 @@
       "@/types/*": [
         "app/types/*"
       ],
-        "@/slice/*": [
+      "@/slice/*": [
         "app/lib/features*"
+      ],
+      "@/lib/*": [
+        "lib/*"
+      ],
+      "@app/lib/*": [
+        "app/lib/*"
+      ],
+      "@/app/lib/*": [
+        "app/lib/*"
       ]
     }
   },
