@@ -141,6 +141,12 @@ function groupNutrientsByProtein(nutrients: Nutrient[]): GroupedProteinVariant[]
 
 export async function GET() {
   console.log("🚀 API Route /api/menu called - Starting data fetch...");
+  console.log("📍 Environment check:", {
+    hasDatabaseUrl: !!process.env.DATABASE_URL,
+    databaseUrlPreview: process.env.DATABASE_URL ? `${process.env.DATABASE_URL.substring(0, 50)}...` : "NOT SET",
+    nodeEnv: process.env.NODE_ENV,
+  });
+  
   try {
     // Check if DATABASE_URL is set
     if (!process.env.DATABASE_URL) {
@@ -148,13 +154,20 @@ export async function GET() {
       return NextResponse.json(
         { 
           error: "Database configuration missing. Please set DATABASE_URL environment variable.",
-          details: "This is required for the menu API to work."
+          details: "This is required for the menu API to work.",
+          fix: "Add DATABASE_URL to Vercel environment variables with your Supabase PostgreSQL connection string."
         },
         { status: 500 }
       );
     }
 
+    // Test database connection first
+    console.log("🔌 Testing database connection...");
+    await prisma.$connect();
+    console.log("✅ Database connection successful");
+
     // Fetch all menu items with their categories and nutrients
+    console.log("📊 Fetching menu items from database...");
     const menuItems = await prisma.menuItem.findMany({
       include: {
         category: true,
@@ -220,16 +233,48 @@ export async function GET() {
     return NextResponse.json(menuByCategory);
   } catch (error) {
     console.error("❌ Error fetching menu:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    const errorDetails = error instanceof Error ? error.stack : String(error);
     
-    console.error("Error details:", errorDetails);
+    // Extract detailed error information
+    let errorMessage = "Unknown error";
+    let errorCode = "UNKNOWN";
+    let errorHint = "Check Vercel logs for more details.";
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      
+      // Check for specific Prisma errors
+      if (error.message.includes("Can't reach database server") || error.message.includes("P1001")) {
+        errorCode = "DATABASE_CONNECTION_ERROR";
+        errorHint = "Database server is unreachable. Check DATABASE_URL connection string and ensure the database is accessible.";
+      } else if (error.message.includes("does not exist") || error.message.includes("P2025")) {
+        errorCode = "TABLE_NOT_FOUND";
+        errorHint = "Database tables don't exist. Run 'npx prisma db push' to create tables in Supabase.";
+      } else if (error.message.includes("Authentication failed") || error.message.includes("P1000")) {
+        errorCode = "AUTHENTICATION_ERROR";
+        errorHint = "Database authentication failed. Check DATABASE_URL password and connection string format.";
+      } else if (error.message.includes("relation") && error.message.includes("does not exist")) {
+        errorCode = "SCHEMA_MISSING";
+        errorHint = "Database schema not found. Push schema with 'npx prisma db push' and seed with 'npx prisma db seed'.";
+      }
+    }
+    
+    console.error("Error code:", errorCode);
+    console.error("Error message:", errorMessage);
+    console.error("DATABASE_URL present:", !!process.env.DATABASE_URL);
+    console.error("DATABASE_URL preview:", process.env.DATABASE_URL ? `${process.env.DATABASE_URL.substring(0, 30)}...` : "NOT SET");
     
     return NextResponse.json(
       { 
         error: "Failed to fetch menu data",
+        code: errorCode,
         message: errorMessage,
-        hint: "Check Vercel logs for more details. Ensure DATABASE_URL is set correctly."
+        hint: errorHint,
+        troubleshooting: {
+          step1: "Verify DATABASE_URL is set in Vercel environment variables",
+          step2: "Ensure schema is pushed: 'npx prisma db push'",
+          step3: "Ensure data is seeded: 'npx prisma db seed'",
+          step4: "Check Vercel deployment logs for detailed error"
+        }
       },
       { status: 500 }
     );
