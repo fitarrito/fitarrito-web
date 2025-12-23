@@ -1,8 +1,7 @@
 {
-    "cleanUrls": true,
-    
-      "github": {
-        "autoJobCancelation": true
-      }
-    
-  }
+  "cleanUrls": true,
+  "github": {
+    "autoJobCancelation": true
+  },
+  "buildCommand": "prisma generate && next build"
+}

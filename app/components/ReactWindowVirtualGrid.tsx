@@ -149,7 +149,15 @@ function ReactWindowVirtualGrid<T>({
             rowHeight={actualItemHeight}
             width={width}
             itemData={items}
-            itemKey={({ columnIndex, rowIndex, data }: { columnIndex: number; rowIndex: number; data: T[] }) => {
+            itemKey={({
+              columnIndex,
+              rowIndex,
+              data,
+            }: {
+              columnIndex: number;
+              rowIndex: number;
+              data: T[];
+            }) => {
               const idx = rowIndex * itemsPerRow + columnIndex;
               const item = data[idx];
               return keyExtractor ? keyExtractor(item, idx) : idx;
