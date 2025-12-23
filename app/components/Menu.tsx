@@ -119,7 +119,7 @@ export default function Menu({ heading, tabs }: MenuProps) {
     if (tabsKeys.length > 0) {
       setActiveTab(tabsKeys[0]); // Set the first tab as active
     }
-  }, [menuType]);
+  }, [menuType, tabsKeys]);
   useEffect(() => {
     if (tabsKeys.length > 0 && !activeTab) {
       setActiveTab(tabsKeys[0]); // Set the first tab as active

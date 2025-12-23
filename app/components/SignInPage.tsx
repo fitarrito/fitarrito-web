@@ -76,26 +76,43 @@ export default function SignInPage() {
   const [phoneOrEmail, setPhoneOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [success, setSuccess] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
 
-  // Clear error when component mounts or when user starts typing
+  // Clear error when component mounts
   useEffect(() => {
     dispatch(setError(null));
+    setLocalError(null);
   }, [dispatch]);
 
-  // Clear error when user starts typing
+  // Sync Redux error with local error state
   useEffect(() => {
-    if (error && (phoneOrEmail || password)) {
-      dispatch(setError(null));
+    if (error) {
+      setLocalError(error);
+    } else {
+      setLocalError(null);
     }
-  }, [phoneOrEmail, password, error, dispatch]);
+  }, [error]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccess(null);
+    setLocalError(null);
+    // Clear any previous errors before attempting sign in
+    dispatch(setError(null));
 
     const result = await signIn(phoneOrEmail, password);
 
     if (result.error) {
+      // Error should be set in Redux by useAuth hook
+      // But ensure it's displayed by checking and setting fallback if needed
+      const errorMessage =
+        result.error?.message ||
+        (typeof result.error === "string" ? result.error : null) ||
+        "Invalid email or password. Please check your credentials and try again.";
+
+      // Set error in both Redux and local state to ensure it displays
+      dispatch(setError(errorMessage));
+      setLocalError(errorMessage);
       return;
     }
 
@@ -149,7 +166,11 @@ export default function SignInPage() {
 
             <FormContainer>
               <Form onSubmit={handleSignIn}>
-                {error && <ErrorMessage>{error}</ErrorMessage>}
+                {(error || localError) && (
+                  <ErrorMessage role="alert" aria-live="polite">
+                    {error || localError}
+                  </ErrorMessage>
+                )}
                 {success && <SuccessMessage>{success}</SuccessMessage>}
 
                 <InputContainer>

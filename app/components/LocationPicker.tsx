@@ -10,11 +10,17 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import tw from "twin.macro";
-import Modal from "react-modal";
+import ReactModal from "react-modal";
 import { IoCloseSharp } from "react-icons/io5";
 
+const Modal = ReactModal as unknown as React.ComponentType<ReactModal.Props>;
+
 // Fix for default marker icon in Next.js
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (
+  L.Icon.Default.prototype as unknown as Record<string, unknown> & {
+    _getIconUrl?: unknown;
+  }
+)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
@@ -141,7 +147,7 @@ export default function LocationPicker({
       };
 
       onLocationSelect(lat, lng, address, addressDetails);
-    } catch (error) {
+    } catch {
       onLocationSelect(lat, lng, `${lat}, ${lng}`);
     }
   };

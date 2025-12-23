@@ -1,11 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import tw, { styled } from "twin.macro";
-import Modal from "react-modal";
+import ReactModal from "react-modal";
 import { useAppDispatch } from "app/lib/hooks";
 import { addItemsToCart } from "app/lib/features/cartSlice";
 import { menuItem } from "@/types/types";
+import { useAuth } from "../lib/hooks/useAuth";
+import SignInWarningModal from "./SignInWarningModal";
+
+// Type assertion to fix TypeScript compatibility issue with react-modal
+const Modal = ReactModal as unknown as React.ComponentType<ReactModal.Props>;
 
 interface CartModalProps {
   isOpen: boolean;
@@ -51,6 +56,8 @@ const CartModal: React.FC<CartModalProps> = ({
   decrementQuantity,
 }) => {
   const dispatch = useAppDispatch();
+  const { isAuthenticated } = useAuth();
+  const [showSignInModal, setShowSignInModal] = useState(false);
 
   if (!selectedCard) return null;
 
@@ -99,6 +106,12 @@ const CartModal: React.FC<CartModalProps> = ({
           </QuantityWrapper>
           <ActionButton
             onClick={async () => {
+              // Check if user is authenticated
+              if (!isAuthenticated) {
+                setShowSignInModal(true);
+                return;
+              }
+
               // Generate unique cart item ID
               const cartItemId = `${selectedCard.title}-${
                 selectedCard.selectedProtein || "default"
@@ -123,6 +136,10 @@ const CartModal: React.FC<CartModalProps> = ({
           </ActionButton>
         </ButtonGroup>
       </ModalContainer>
+      <SignInWarningModal
+        isOpen={showSignInModal}
+        onClose={() => setShowSignInModal(false)}
+      />
     </Modal>
   );
 };

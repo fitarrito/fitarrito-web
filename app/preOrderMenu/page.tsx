@@ -51,7 +51,10 @@ const Container = tw.div`relative mt-16`;
 
 export default function PreOrdermenu() {
   const menu = useAppSelector((state) => state.menu.preOrderMenu);
-  const tabsKeys = menu && typeof menu === "object" ? Object.keys(menu) : [];
+  const dispatch = useAppDispatch();
+  const tabsKeys = React.useMemo(() => {
+    return menu && typeof menu === "object" ? Object.keys(menu) : [];
+  }, [menu]);
   const [activeTab, setActiveTab] = useState(tabsKeys[0] || "");
   const [nutrientData, setNutrientData] = useState<dataProps>({
     cals: 0,
@@ -67,7 +70,7 @@ export default function PreOrdermenu() {
         dispatch(setSelectedMenu(defaultMenu[0]));
       }
     }
-  }, [menu]);
+  }, [menu, tabsKeys, dispatch]);
   const AddOnImage = React.memo(
     ({ src, alt }: { src: string; alt: string }) => (
       <ImageWrapper>
@@ -183,7 +186,6 @@ export default function PreOrdermenu() {
     (state: RootState) => state.menu.selectedMenu
   );
   const addOns = selectedMenu?.addOns;
-  const dispatch = useAppDispatch();
 
   const specificAddons = selectedMenu?.specificAddons;
   const handleTabChange = (tabName: string) => {

@@ -12,6 +12,8 @@ import { setSelectedMenu } from "app/lib/features/menuSlice";
 import ChooseVariantCard from "./ChooseVariantCard";
 import { useAppSelector, useAppDispatch } from "app/lib/hooks";
 import { PreOrderMenuItem, menuItem } from "app/types/types";
+import { useAuth } from "../lib/hooks/useAuth";
+import SignInWarningModal from "./SignInWarningModal";
 
 const CardContainer = tw.div`w-full mt-10`;
 const Card = tw(motion.div)`bg-gray-200 rounded-lg mx-auto overflow-hidden`;
@@ -61,6 +63,8 @@ const DisplayTabContent: React.FC<{
   const dispatch = useAppDispatch();
   const menuType = useAppSelector((state) => state.menu.menuType);
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const [showSignInModal, setShowSignInModal] = useState(false);
 
   // Store calculated price and selected options for cart
   const [calculatedPrice, setCalculatedPrice] = useState<number>(
@@ -150,6 +154,13 @@ const DisplayTabContent: React.FC<{
                 onClick={async () => {
                   if (menuType === "restaurant") {
                     if (!card) return;
+
+                    // Check if user is authenticated
+                    if (!isAuthenticated) {
+                      setShowSignInModal(true);
+                      return;
+                    }
+
                     // Generate unique cart item ID
                     const cartItemId = `${card.title}-${
                       selectedProtein || "default"
@@ -281,7 +292,14 @@ const DisplayTabContent: React.FC<{
                     <CardButton
                       onClick={() => {
                         if (!card) return;
-                        else openModal?.(card);
+
+                        // Check if user is authenticated
+                        if (!isAuthenticated) {
+                          setShowSignInModal(true);
+                          return;
+                        }
+
+                        openModal?.(card);
                       }}
                     >
                       Add to cart
@@ -297,6 +315,11 @@ const DisplayTabContent: React.FC<{
           </>
         )}
       </Card>
+      <SignInWarningModal
+        isOpen={showSignInModal}
+        onClose={() => setShowSignInModal(false)}
+        onSignIn={() => router.push("/signin")}
+      />
     </CardContainer>
   );
 };

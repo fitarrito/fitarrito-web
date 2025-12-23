@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import Modal from "react-modal";
+import ReactModal from "react-modal";
 import tw, { styled } from "twin.macro";
+
+const Modal = ReactModal as unknown as React.ComponentType<ReactModal.Props>;
 
 interface CardItem {
   title: string;

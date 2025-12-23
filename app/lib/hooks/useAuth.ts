@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { setUser, setSession, setLoading, setError, signOut } from "../features/authSlice";
 import { supabase } from "@/lib/supabase";
+import type { AuthError } from "@supabase/supabase-js";
 
 export function useAuth() {
   const dispatch = useAppDispatch();
@@ -116,40 +117,63 @@ export function useAuth() {
       });
 
       if (signInError) {
-        // Extract error message from Supabase error object
-        const errorMessage = signInError.message || signInError.toString() || "An error occurred during sign in";
-        const errorStatus = signInError.status || "unknown";
+        // Extract error message - Supabase errors have different structures
+        // Wrap in try-catch to prevent errors when accessing error properties
+        let errorMessage = "An error occurred during sign in";
+        let userFriendlyMessage = "Invalid email or password. Please check your credentials and try again.";
         
-        // Provide more specific error messages
-        let userFriendlyMessage = errorMessage;
-        
-        // Check for specific error types
-        if (errorMessage.toLowerCase().includes("invalid login credentials") || 
-            errorMessage.toLowerCase().includes("invalid credentials")) {
+        try {
+          // Try multiple ways to extract the error message safely
+          if (typeof signInError === "string") {
+            errorMessage = signInError;
+          } else if (signInError && typeof signInError === "object") {
+            // Safely access message property
+            try {
+              const authError = signInError as AuthError & { error_description?: string; error?: string };
+              errorMessage = authError.message || authError.error_description || authError.error || String(signInError);
+            } catch {
+              // If accessing properties throws, use string conversion
+              try {
+                errorMessage = JSON.stringify(signInError);
+              } catch {
+                errorMessage = String(signInError);
+              }
+            }
+          } else if (signInError) {
+            errorMessage = String(signInError);
+          }
+          
+          // Provide more specific error messages
+          const lowerMessage = errorMessage.toLowerCase();
+          
+          // Check for specific error types
+          if (lowerMessage.includes("invalid login credentials") || 
+              lowerMessage.includes("invalid credentials") ||
+              lowerMessage.includes("email or password")) {
+            userFriendlyMessage = "Invalid email or password. Please check your credentials and try again.";
+          } else if (lowerMessage.includes("email not confirmed") ||
+                     lowerMessage.includes("not confirmed") ||
+                     lowerMessage.includes("email verification")) {
+            userFriendlyMessage = "Please verify your email address. Check your inbox for the confirmation link.";
+          } else if (lowerMessage.includes("user not found")) {
+            userFriendlyMessage = "No account found with this email. Please sign up first.";
+          } else if (lowerMessage.includes("too many requests") ||
+                     lowerMessage.includes("rate limit")) {
+            userFriendlyMessage = "Too many login attempts. Please try again later.";
+          } else {
+            // Use the extracted error message if no specific match
+            userFriendlyMessage = errorMessage;
+          }
+        } catch (extractError) {
+          // If error extraction fails, use default message
+          console.error("Error extracting error message:", extractError);
           userFriendlyMessage = "Invalid email or password. Please check your credentials and try again.";
-        } else if (errorMessage.toLowerCase().includes("email not confirmed") ||
-                   errorMessage.toLowerCase().includes("not confirmed")) {
-          userFriendlyMessage = "Please verify your email address. Check your inbox for the confirmation link.";
-        } else if (errorMessage.toLowerCase().includes("user not found")) {
-          userFriendlyMessage = "No account found with this email. Please sign up first.";
-        } else if (errorMessage.toLowerCase().includes("too many requests")) {
-          userFriendlyMessage = "Too many login attempts. Please try again later.";
         }
         
-        // Log error for debugging - log the raw error first
-        console.error("Sign in error (raw):", signInError);
-        console.error("Sign in error (parsed):", {
-          error: signInError,
-          message: errorMessage,
-          status: errorStatus,
-          email: email,
-          errorType: typeof signInError,
-          errorKeys: signInError ? Object.keys(signInError) : [],
-        });
-        
+        // Set error in Redux and return
         dispatch(setError(userFriendlyMessage));
         dispatch(setLoading(false));
-        return { error: signInError };
+        return { error: { message: userFriendlyMessage } };
       }
 
       dispatch(setUser(data.user));
@@ -157,10 +181,39 @@ export function useAuth() {
       dispatch(setLoading(false));
       return { user: data.user, session: data.session };
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+      // Safely extract error message
+      let errorMessage = "An error occurred during sign in";
+      
+      try {
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (typeof err === "string") {
+          errorMessage = err;
+        } else if (err && typeof err === "object") {
+          try {
+            const errObj = err as { message?: string; error?: string };
+            errorMessage = errObj.message || errObj.error || JSON.stringify(err);
+          } catch {
+            errorMessage = String(err);
+          }
+        } else {
+          errorMessage = String(err);
+        }
+        
+        // Provide user-friendly message for common errors
+        const lowerMessage = errorMessage.toLowerCase();
+        if (lowerMessage.includes("invalid login credentials") || 
+            lowerMessage.includes("invalid credentials")) {
+          errorMessage = "Invalid email or password. Please check your credentials and try again.";
+        }
+      } catch {
+        // If all else fails, use default message
+        errorMessage = "Invalid email or password. Please check your credentials and try again.";
+      }
+      
       dispatch(setError(errorMessage));
       dispatch(setLoading(false));
-      return { error: err };
+      return { error: { message: errorMessage } };
     }
   };
 

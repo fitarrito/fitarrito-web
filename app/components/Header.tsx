@@ -7,10 +7,12 @@ import gsap from "gsap";
 import textImage from "../images/fitarrito.svg";
 import CartDrawer from "@/components/CartDrawer";
 import logo from "../images/logo.svg";
-import { FaShoppingCart, FaUser } from "react-icons/fa";
+import { FaShoppingCart, FaUser, FaChevronDown } from "react-icons/fa";
 import { useAppSelector } from "app/lib/hooks";
 import { selectTotalQuantity } from "app/lib/features/cartSlice";
 import { useAuth } from "../lib/hooks/useAuth";
+import LogoutConfirmationModal from "./LogoutConfirmationModal";
+import { User } from "@supabase/supabase-js";
 
 // Typ für einen einzelnen Menüpunkt
 interface MenuItem {
@@ -20,13 +22,71 @@ interface MenuItem {
 
 // Liste von Menüpunkten
 
+// Helper function to get user display name
+const getUserDisplayName = (user: User | null): string => {
+  if (!user) return "User";
+  try {
+    // Check both user_metadata and raw_user_meta_data
+    const metadata =
+      user.user_metadata ||
+      (user as User & { raw_user_meta_data?: Record<string, unknown> })
+        .raw_user_meta_data;
+    if (metadata?.name) {
+      return String(metadata.name);
+    }
+    if (user.email) {
+      return user.email.split("@")[0];
+    }
+  } catch (error) {
+    console.error("Error getting user display name:", error);
+  }
+  return "User";
+};
+
+// Helper function to get user initial for avatar
+const getUserInitial = (user: User | null): string => {
+  try {
+    const name = getUserDisplayName(user);
+    return name.charAt(0).toUpperCase();
+  } catch (error) {
+    console.error("Error getting user initial:", error);
+    return "U";
+  }
+};
+
 // Header-Komponente
 const Header: React.FC = () => {
   const navRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
   const totalQuantity = useAppSelector(selectTotalQuantity);
   const prevScrollY = useRef(0);
-  const { isAuthenticated, signOut } = useAuth();
+  const { signOut, user, isAuthenticated, loading: authLoading } = useAuth();
+
+  // Debug: Check if user exists
+  useEffect(() => {
+    console.log("Header: Auth state check", {
+      hasUser: !!user,
+      isAuthenticated,
+      authLoading,
+      userEmail: user?.email,
+      userName: user?.user_metadata?.name,
+      userMetadata: user?.user_metadata,
+      session: user ? "exists" : "null",
+    });
+    if (!authLoading && user) {
+      console.log("Header: ✅ Should show profile section");
+    } else if (!authLoading && !user) {
+      console.log("Header: ❌ Should show Sign In button", {
+        reason: "No user object after loading",
+      });
+    } else {
+      console.log("Header: ⏳ Still loading auth state...");
+    }
+  }, [user, isAuthenticated, authLoading]);
+
   const useIsomorphicLayoutEffect =
     typeof window !== "undefined" ? useLayoutEffect : useEffect;
   useIsomorphicLayoutEffect(() => {
@@ -83,6 +143,26 @@ const Header: React.FC = () => {
       gsap.killTweensOf(navRef.current);
     };
   }, []);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowProfileDropdown(false);
+      }
+    };
+
+    if (showProfileDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showProfileDropdown]);
   return (
     // Header-Element
     <header className="sticky top-0 z-50">
@@ -93,7 +173,10 @@ const Header: React.FC = () => {
         {/* Hintergrund für das aufklappbare Menü */}
 
         <div className="flex justify-center">
-          <div className=" bg-nav-color-dark w-screen justify-between  shadow-customShadow-md laptop:w-[80vw] text-white inline-flex items-center py-1 mobile:py-3 px-1 md:px-4 lg laptop:rounded-full laptop:my-4  laptop:inline-flex">
+          <div
+            className=" bg-nav-color-dark w-screen justify-between  shadow-customShadow-md laptop:w-[80vw] text-white inline-flex items-center py-1 mobile:py-3 px-1 md:px-4 lg laptop:rounded-full laptop:my-4  laptop:inline-flex overflow-visible"
+            style={{ overflow: "visible" }}
+          >
             <div className="flex items-center">
               <div>
                 <Link
@@ -118,15 +201,118 @@ const Header: React.FC = () => {
               </div>
             </div>
 
-            <div className="z-40 flex flex-row gap-3 items-center">
-              {isAuthenticated ? (
-                <button
-                  onClick={signOut}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-3xl flex flex-row items-center gap-2 text-white text-sm font-medium transition-colors"
-                >
-                  <FaUser className="text-white text-base" />
-                  <span className="hidden sm:inline">Sign Out</span>
-                </button>
+            <div
+              className="z-40 flex flex-row gap-3 items-center overflow-visible"
+              style={{ overflow: "visible", minWidth: "fit-content" }}
+            >
+              {/* Always show profile section if user exists */}
+              {/* Show profile if user exists, or if we're still loading (to avoid flicker) */}
+              {!authLoading && user ? (
+                <>
+                  {/* Profile Section with Dropdown */}
+                  <div
+                    className="relative"
+                    ref={profileDropdownRef}
+                    data-testid="profile-section"
+                    style={{
+                      display: "block",
+                      visibility: "visible",
+                      opacity: 1,
+                      position: "relative",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowProfileDropdown(!showProfileDropdown)
+                      }
+                      className="px-3 py-2 rounded-3xl flex flex-row items-center gap-2 text-white text-sm font-medium transition-colors hover:bg-white/20 relative z-50 min-w-fit bg-white/20 border border-white/40"
+                      aria-label="User profile menu"
+                      data-testid="profile-button"
+                      style={{
+                        display: "flex",
+                        visibility: "visible",
+                        opacity: 1,
+                        minWidth: "fit-content",
+                        width: "auto",
+                        background: "rgba(255, 255, 255, 0.2)",
+                        border: "1px solid rgba(255, 255, 255, 0.4)",
+                      }}
+                    >
+                      {/* Profile Icon/Avatar */}
+                      <div
+                        className="px-3 py-2 rounded-3xl flex items-center gap-2
+text-gray-900 bg-customTheme border border-white-500 hover:bg-gray-500 transition"
+                        style={{
+                          minWidth: "32px",
+                          minHeight: "32px",
+                          width: "32px",
+                          height: "32px",
+                          display: "flex",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <span
+                          className="text-gray-900 text-xs font-bold"
+                          style={{
+                            color: "#ffffff",
+                            display: "inline-block",
+                            lineHeight: "1",
+                          }}
+                        >
+                          {user ? getUserInitial(user) : "U"}
+                        </span>
+                      </div>
+                      {/* Profile Name */}
+                      <span
+                        className="text-white text-sm font-semibold whitespace-nowrap"
+                        style={{
+                          color: "#000000",
+                          display: "inline-block",
+                          lineHeight: "1.5",
+                        }}
+                      >
+                        {user ? getUserDisplayName(user) : "User"}
+                      </span>
+                      <FaChevronDown
+                        className={`text-white text-sm transition-transform flex-shrink-0 ${
+                          showProfileDropdown ? "rotate-180" : ""
+                        }`}
+                        style={{
+                          color: "#ffffff",
+                          display: "block",
+                          flexShrink: 0,
+                        }}
+                        // aria-hidden="true"
+                      />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {showProfileDropdown && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                        <div className="px-4 py-2 border-b border-gray-100">
+                          <p className="text-sm font-semibold text-gray-900">
+                            {user ? getUserDisplayName(user) : "User"}
+                          </p>
+                          {user?.email && (
+                            <p className="text-xs text-gray-500 truncate">
+                              {user.email}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => {
+                            setShowProfileDropdown(false);
+                            setShowLogoutModal(true);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
               ) : (
                 <Link
                   href="/signin"
@@ -154,6 +340,11 @@ const Header: React.FC = () => {
         {/* Aufklappbares Menü */}
       </div>
       {isOpen ? <CartDrawer isOpen={isOpen} setIsOpen={setIsOpen} /> : null}
+      <LogoutConfirmationModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={signOut}
+      />
     </header>
   );
 };

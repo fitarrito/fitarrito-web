@@ -6,8 +6,12 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { FixedSizeGrid as Grid } from "react-window";
+import { FixedSizeGrid as FixedSizeGridComponent } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
+
+// Type assertion to fix TypeScript compatibility issue with react-window
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Grid = FixedSizeGridComponent as any;
 
 interface ReactWindowVirtualGridProps<T> {
   items: T[];
@@ -145,7 +149,7 @@ function ReactWindowVirtualGrid<T>({
             rowHeight={actualItemHeight}
             width={width}
             itemData={items}
-            itemKey={({ columnIndex, rowIndex, data }) => {
+            itemKey={({ columnIndex, rowIndex, data }: { columnIndex: number; rowIndex: number; data: T[] }) => {
               const idx = rowIndex * itemsPerRow + columnIndex;
               const item = data[idx];
               return keyExtractor ? keyExtractor(item, idx) : idx;

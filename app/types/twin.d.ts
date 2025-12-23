@@ -1,15 +1,17 @@
-import type { CSSProp, default as styled, css } from 'styled-components'
+import type { CSSProp } from 'styled-components'
 
 declare module 'twin.macro' {
-  export const styled: typeof styled
-  export const css: typeof css
-  const tw: typeof css
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export const styled: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export const css: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tw: any
   export default tw
 }
 
 declare module 'react' {
-  import type { CSSProp } from 'styled-components'
-  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLAttributes<T> {
     css?: CSSProp
     tw?: string

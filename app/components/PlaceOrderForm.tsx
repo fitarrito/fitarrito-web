@@ -1,11 +1,11 @@
 "use client";
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import Modal from "react-modal";
 import tw from "twin.macro";
 import { useAppDispatch } from "app/lib/hooks";
 import { clearCart } from "app/lib/features/cartSlice"; // Update path as needed
 import OrderConfirmationModal from "./OrderConfirmationModal";
+import ReactModal from "react-modal";
 
 // Dynamically import LocationPicker to avoid SSR issues with Leaflet
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
@@ -79,6 +79,8 @@ export default function OrderModal({
   setIsModalOpen,
   onOrderSubmit,
 }: orderModalProps) {
+  const Modal = ReactModal as unknown as React.ComponentType<ReactModal.Props>;
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState<{
