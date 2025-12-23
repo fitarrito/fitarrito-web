@@ -1,9 +1,7 @@
 // app/api/menu/route.ts
 import { NextResponse } from "next/server";
-import { PrismaClient } from "../../../generated/prisma";
+import { prisma } from "../../../lib/prisma";
 import menuData from "../../../prisma/data/menu.json";
-
-const prisma = new PrismaClient();
 
 type ProteinVariant = {
   name: string;
@@ -163,8 +161,13 @@ export async function GET() {
 
     // Test database connection first
     console.log("🔌 Testing database connection...");
-    await prisma.$connect();
-    console.log("✅ Database connection successful");
+    try {
+      await prisma.$connect();
+      console.log("✅ Database connection successful");
+    } catch (connectError) {
+      console.error("❌ Database connection failed:", connectError);
+      throw new Error(`Database connection failed: ${connectError instanceof Error ? connectError.message : String(connectError)}`);
+    }
 
     // Fetch all menu items with their categories and nutrients
     console.log("📊 Fetching menu items from database...");
@@ -243,18 +246,24 @@ export async function GET() {
       errorMessage = error.message;
       
       // Check for specific Prisma errors
-      if (error.message.includes("Can't reach database server") || error.message.includes("P1001")) {
+      if (error.message.includes("Can't reach database server") || error.message.includes("P1001") || error.message.includes("ECONNREFUSED")) {
         errorCode = "DATABASE_CONNECTION_ERROR";
-        errorHint = "Database server is unreachable. Check DATABASE_URL connection string and ensure the database is accessible.";
+        errorHint = "Database server is unreachable. Check DATABASE_URL connection string and ensure the database is accessible. Use pooled connection (port 6543) for serverless.";
       } else if (error.message.includes("does not exist") || error.message.includes("P2025")) {
         errorCode = "TABLE_NOT_FOUND";
         errorHint = "Database tables don't exist. Run 'npx prisma db push' to create tables in Supabase.";
-      } else if (error.message.includes("Authentication failed") || error.message.includes("P1000")) {
+      } else if (error.message.includes("Authentication failed") || error.message.includes("P1000") || error.message.includes("password authentication failed")) {
         errorCode = "AUTHENTICATION_ERROR";
-        errorHint = "Database authentication failed. Check DATABASE_URL password and connection string format.";
+        errorHint = "Database authentication failed. Check DATABASE_URL password and connection string format. Ensure you're using the pooled connection string from Supabase.";
       } else if (error.message.includes("relation") && error.message.includes("does not exist")) {
         errorCode = "SCHEMA_MISSING";
         errorHint = "Database schema not found. Push schema with 'npx prisma db push' and seed with 'npx prisma db seed'.";
+      } else if (error.message.includes("Cannot find module") || error.message.includes("generated/prisma")) {
+        errorCode = "PRISMA_CLIENT_MISSING";
+        errorHint = "Prisma Client not generated. Ensure 'prisma generate' runs during build. Check Vercel build logs.";
+      } else if (error.message.includes("Invalid `prisma") || error.message.includes("Unknown argument")) {
+        errorCode = "PRISMA_QUERY_ERROR";
+        errorHint = "Prisma query error. Check if schema matches database structure. Run 'npx prisma db push' to sync schema.";
       }
     }
     
@@ -278,7 +287,7 @@ export async function GET() {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
+  // Note: We don't disconnect in serverless environments
+  // The singleton pattern handles connection pooling automatically
 }
