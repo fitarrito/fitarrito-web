@@ -142,6 +142,18 @@ function groupNutrientsByProtein(nutrients: Nutrient[]): GroupedProteinVariant[]
 export async function GET() {
   console.log("🚀 API Route /api/menu called - Starting data fetch...");
   try {
+    // Check if DATABASE_URL is set
+    if (!process.env.DATABASE_URL) {
+      console.error("❌ DATABASE_URL environment variable is not set");
+      return NextResponse.json(
+        { 
+          error: "Database configuration missing. Please set DATABASE_URL environment variable.",
+          details: "This is required for the menu API to work."
+        },
+        { status: 500 }
+      );
+    }
+
     // Fetch all menu items with their categories and nutrients
     const menuItems = await prisma.menuItem.findMany({
       include: {
@@ -207,9 +219,18 @@ export async function GET() {
 
     return NextResponse.json(menuByCategory);
   } catch (error) {
-    console.error("Error fetching menu:", error);
+    console.error("❌ Error fetching menu:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorDetails = error instanceof Error ? error.stack : String(error);
+    
+    console.error("Error details:", errorDetails);
+    
     return NextResponse.json(
-      { error: "Failed to fetch menu data" },
+      { 
+        error: "Failed to fetch menu data",
+        message: errorMessage,
+        hint: "Check Vercel logs for more details. Ensure DATABASE_URL is set correctly."
+      },
       { status: 500 }
     );
   } finally {

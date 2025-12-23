@@ -76,15 +76,6 @@ const Header: React.FC = () => {
       userMetadata: user?.user_metadata,
       session: user ? "exists" : "null",
     });
-    if (!authLoading && user) {
-      console.log("Header: ✅ Should show profile section");
-    } else if (!authLoading && !user) {
-      console.log("Header: ❌ Should show Sign In button", {
-        reason: "No user object after loading",
-      });
-    } else {
-      console.log("Header: ⏳ Still loading auth state...");
-    }
   }, [user, isAuthenticated, authLoading]);
 
   const useIsomorphicLayoutEffect =
