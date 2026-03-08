@@ -23,22 +23,22 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 ## Project Screenshots
 
 ### Home Page
-![Home](Screenshots/homepage.png)
+![Home](screenshots/homepage.png)
 
 ### Menu Page
-![Menu](Screenshots/menu.png)
+![Menu](screenshots/menu.png)
 
 ### Subscription Page
-![Subscription](Screenshots/subscription.png)
+![Subscription](screenshots/subscription.png)
 
 ### Nutrient Calculator
-![Calculator](Screenshots/nutrientCalculator.png)
+![Calculator](screenshots/nutrientCalculator.png)
 
 ### SignIn Page
-![SignIn](Screenshots/signIn.png)
+![SignIn](screenshots/signIn.png)
 
 ### SignUp Page
-![SignUp](Screenshots/SignUp.png)
+![SignUp](screenshots/SignUp.png)
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
