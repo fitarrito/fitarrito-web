@@ -23,14 +23,21 @@ export const getMenu = createAsyncThunk("menu/getMenu", async () => {
   try {
     const response = await fetch("/api/menu");
     if (!response.ok) {
-      throw new Error("Failed to fetch menu");
+      const errorData = await response.json().catch(() => ({}));
+      console.warn("Menu API returned error:", response.status, errorData);
+      // Return empty object instead of throwing to prevent UI crashes
+      return {} as Tabs;
     }
     const data = await response.json();
     console.log(data, "data of getMenu");
     return data as Tabs;
   } catch (error) {
-    console.error("Error fetching menu from API:", error);
-    // Fallback to empty object if API fails
+    // Only log error, don't throw - return empty object to allow app to continue
+    console.warn(
+      "Error fetching menu from API (this is non-critical):",
+      error instanceof Error ? error.message : String(error)
+    );
+    // Return empty object so the app doesn't crash
     return {} as Tabs;
   }
 });
@@ -89,6 +96,7 @@ const cartSlice = createSlice({
       .addCase(getMenu.fulfilled, (state, action: PayloadAction<Tabs>) => {
         state.restaurantMenu = action.payload;
         state.menu = action.payload; // Also update the main menu
+        state.loading = "idle";
       })
       .addCase(
         getPreOrderMenu.fulfilled,

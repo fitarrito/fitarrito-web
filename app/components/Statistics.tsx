@@ -17,7 +17,6 @@ const TwoColumn = tw.div`flex md:flex-row xs:flex-col items-center justify-betwe
 const Column = tw.div`w-full max-w-md mx-auto md:max-w-none md:mx-0`;
 const imageContainerCss = tw`p-2!`;
 const HighlightedText = tw.span`bg-customTheme text-gray-100 px-8 transform -skew-x-12 inline-block leading-snug text-2xl font-black`;
-const SubHeading = tw.p`font-black text-2xl text-green-600 md:text-3xl mb-2  mx-auto leading-snug max-w-3xl`;
 
 const ImageColumn = tw.div`relative mt-12 lg:mt-0 flex flex-col justify-center`;
 const TextColumn = styled(Column)<TextColumnProps>(() => [
@@ -65,7 +64,7 @@ export default function Statistics() {
               Why <HighlightedText>Choose Us ?</HighlightedText>
             </Heading>
             <Description>
-              <SubHeading>Fitarrito: Where Health Meets Taste</SubHeading>
+              {/* <SubHeading>Fitarrito: Where Health Meets Taste</SubHeading> */}
               <div className="text-lg text-gray-700 mb-4">
                 <strong>Healthy food is rarely an easy, go-to option</strong>.
                 Finding a place that serves nutritious yet delicious meals often
@@ -85,10 +84,11 @@ export default function Statistics() {
                 Whether you’re craving a light, protein-packed meal or a rich,
                 flavorful delight, Fitarrito has something for every palate.
               </div>
-              <div className="text-lg text-green-900 font-semibold text-center">
+              <div className="text-lg text-green-900 font-semibold text-center mb-6">
                 Because at <strong>Fitarrito</strong>, healthy eating isn’t a
                 compromise—it’s a celebration of flavor.
               </div>
+              {/* Nutrition Information Section */}
             </Description>
             {/* <StatisticsColumn>
               {data.map((statistic, index) => (

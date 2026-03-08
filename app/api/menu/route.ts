@@ -82,6 +82,46 @@ type GroupedProteinVariant = ProteinVariant & {
   };
 };
 
+// Build fallback menu from static JSON when DB is unavailable
+function getFallbackMenuFromJson(): { [key: string]: Array<{
+  title: string;
+  description: string;
+  price: string;
+  rating: string;
+  reviews: string;
+  url: string;
+  imagesrc?: { src: string };
+  proteinVariants?: ProteinVariant[];
+}> } {
+  const data = menuData as MenuData;
+  const byCategory: { [key: string]: Array<{
+    title: string;
+    description: string;
+    price: string;
+    rating: string;
+    reviews: string;
+    url: string;
+    imagesrc?: { src: string };
+    proteinVariants?: ProteinVariant[];
+  }> } = {};
+  for (const item of data.menuItems || []) {
+    const categoryName = item.category || "Other";
+    if (!byCategory[categoryName]) byCategory[categoryName] = [];
+    const imageUrl = item.imageUrl?.startsWith("/") ? item.imageUrl : `/${item.imageUrl || ""}`;
+    byCategory[categoryName].push({
+      title: item.title,
+      description: item.description || "",
+      price: String(item.price ?? 0),
+      rating: "0",
+      reviews: "0",
+      url: "#",
+      imagesrc: imageUrl ? { src: imageUrl } : undefined,
+      proteinVariants: item.hasProteinVariants ? data.proteinVariants : undefined,
+    });
+  }
+  return byCategory;
+}
+
 // Helper function to group nutrients by protein variant and size
 function groupNutrientsByProtein(nutrients: Nutrient[]): GroupedProteinVariant[] {
   const grouped: { [key: string]: GroupedProteinVariant } = {};
@@ -236,6 +276,19 @@ export async function GET() {
     return NextResponse.json(menuByCategory);
   } catch (error) {
     console.error("❌ Error fetching menu:", error);
+
+    const errMessage = error instanceof Error ? error.message : String(error);
+    const isConnectionError =
+      errMessage.includes("Tenant or user not found") ||
+      errMessage.includes("Can't reach database server") ||
+      errMessage.includes("ECONNREFUSED") ||
+      errMessage.includes("P1001") ||
+      errMessage.includes("Connection");
+
+    if (isConnectionError) {
+      console.warn("⚠️ Using static menu fallback (database unavailable). Fix DATABASE_URL to use live data.");
+      return NextResponse.json(getFallbackMenuFromJson());
+    }
     
     // Extract detailed error information
     let errorMessage = "Unknown error";
@@ -252,6 +305,9 @@ export async function GET() {
       } else if (error.message.includes("does not exist") || error.message.includes("P2025")) {
         errorCode = "TABLE_NOT_FOUND";
         errorHint = "Database tables don't exist. Run 'npx prisma db push' to create tables in Supabase.";
+      } else if (error.message.includes("Tenant or user not found") || (error.message.includes("tenant") && error.message.includes("not found"))) {
+        errorCode = "TENANT_NOT_FOUND";
+        errorHint = "Supabase project may be paused, or DATABASE_URL is wrong. In Supabase: Project Settings → General → check project is active; use the connection string from Database settings (pooler port 6543 for serverless).";
       } else if (error.message.includes("Authentication failed") || error.message.includes("P1000") || error.message.includes("password authentication failed")) {
         errorCode = "AUTHENTICATION_ERROR";
         errorHint = "Database authentication failed. Check DATABASE_URL password and connection string format. Ensure you're using the pooled connection string from Supabase.";

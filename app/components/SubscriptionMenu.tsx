@@ -15,6 +15,10 @@ import CartDrawer from "@/components/CartDrawer";
 import DisplayTabContent from "@/components/DisplayTabContent";
 import ReactWindowVirtualGrid from "@/components/ReactWindowVirtualGrid";
 import { menuItem } from "@/types/types";
+import { Card } from "@/components/ui/Card";
+import { useRouter } from "next/navigation";
+import { FaUtensils } from "react-icons/fa";
+import { FaUserCog } from "react-icons/fa";
 
 type Tabs = {
   [key: string]: menuItem[];
@@ -45,6 +49,8 @@ const TabControl = styled.div<TabControlProps>`
 `;
 const TabContent = tw(motion.div)`max-w-full px-2`;
 const VirtualTabContent = tw.div`max-w-full px-2`;
+const ContainerWithTopMargin = tw(Container)`pt-8`;
+const CardsContainer = tw.div`flex flex-wrap justify-center gap-6 mb-12 mt-4`;
 
 export default function SubscriptionMenu({
   heading,
@@ -64,6 +70,7 @@ export default function SubscriptionMenu({
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedCard, setSelectedCard] = useState<menuItem | null>(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleTabChange = (tabName: string) => {
     setLoading(true);
@@ -99,8 +106,111 @@ export default function SubscriptionMenu({
   }, [tabsKeys, activeTab]);
 
   return (
-    <Container>
+    <ContainerWithTopMargin>
       <ContentWithPaddingXl>
+        <CardsContainer>
+          <Card
+            primaryText="Order your meal today"
+            icon={<FaUtensils />}
+            onClick={() => router.push("/")}
+          />
+          <Card
+            primaryText="Subscription onboarding form"
+            icon={<FaUserCog />}
+            onClick={() => router.push("/subscription")}
+          />
+        </CardsContainer>
+        <div className="mt-8 pt-6 border-t border-gray-300">
+          <div className="text-lg text-gray-700 mb-6">
+            At <strong>Fitarrito</strong>, every meal is designed with balance
+            in mind — combining healthy carbohydrates, high-quality proteins,
+            fresh fruits, and fiber-rich ingredients.
+          </div>
+
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-6">
+            {/* Left Column */}
+            <div className="space-y-5">
+              {/* Protein Goals */}
+              <div>
+                <h3 className="text-xl font-bold text-green-700 mb-3">
+                  Protein Goals:
+                </h3>
+                <ul className="list-disc list-inside space-y-1 text-lg text-gray-700 ml-4">
+                  <li>
+                    <strong>Regular meals:</strong> 20–30 grams of protein
+                  </li>
+                  <li>
+                    <strong>Jumbo meals:</strong> 45–60 grams of protein
+                  </li>
+                </ul>
+              </div>
+
+              {/* Carbohydrate Choices */}
+              <div>
+                <h3 className="text-xl font-bold text-green-700 mb-3">
+                  Carbohydrate Choices (gluten-friendly):
+                </h3>
+                <ul className="list-disc list-inside space-y-1 text-lg text-gray-700 ml-4">
+                  <li>Quinoa</li>
+                  <li>Millets</li>
+                  <li>Whole wheat chapathi (in wraps)</li>
+                  <li>Whole wheat pasta</li>
+                  <li>Soba (buckwheat) noodles</li>
+                </ul>
+              </div>
+
+              {/* Protein Sources */}
+              <div>
+                <h3 className="text-xl font-bold text-green-700 mb-3">
+                  Protein Sources:
+                </h3>
+                <ul className="list-disc list-inside space-y-1 text-lg text-gray-700 ml-4">
+                  <li>Chicken, fish, paneer, tofu, and soya chunks</li>
+                  <li>Plant-based proteins like hummus and rajma</li>
+                  <li>Additional protein from quinoa and millet</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-5">
+              {/* Fruits & Fiber */}
+              <div>
+                <h3 className="text-xl font-bold text-green-700 mb-3">
+                  Fruits & Fiber:
+                </h3>
+                <ul className="list-disc list-inside space-y-1 text-lg text-gray-700 ml-4">
+                  <li>Fresh fruits are included in all plans</li>
+                  <li>
+                    Premium packages feature wider fruit varieties for added
+                    nutrition and flavor
+                  </li>
+                </ul>
+              </div>
+
+              {/* Dressings */}
+              <div>
+                <h3 className="text-xl font-bold text-green-700 mb-3">
+                  Dressings (low-calorie, fat-free):
+                </h3>
+                <ul className="list-disc list-inside space-y-1 text-lg text-gray-700 ml-4">
+                  <li>Tahini (sesame seed based)</li>
+                  <li>Peanut dressing</li>
+                  <li>Tomato salsa</li>
+                  <li>Hummus (chickpeas)</li>
+                  <li>Sour cream (fermented dairy)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-lg text-gray-700 italic mt-6 pt-4 border-t border-gray-200">
+            Every element is thoughtfully chosen to fuel your body, support
+            dietary needs (including gluten sensitivity), and keep meals both
+            wholesome and delicious.
+          </div>
+        </div>
         <HeaderRow>
           <Header>{heading}</Header>
           {tabsKeys.length > 1 ? (
@@ -119,6 +229,7 @@ export default function SubscriptionMenu({
             </TabsControl>
           ) : null}
         </HeaderRow>
+
         <div className="relative flex items-center">
           {loading ? (
             <TabContent ref={scrollRef} className="mx-auto">
@@ -196,6 +307,6 @@ export default function SubscriptionMenu({
       {isDrawerOpen ? (
         <CartDrawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
       ) : null}
-    </Container>
+    </ContainerWithTopMargin>
   );
 }

@@ -8,7 +8,7 @@ const BaseButton = styled.button<{
   $variant?: "primary" | "secondary" | "outline";
   $fullWidth?: boolean;
 }>`
-  ${tw`font-bold py-3 px-6 rounded-full transition-opacity uppercase text-sm flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed`}
+  ${tw`font-bold py-3 px-6 rounded-full transition-opacity text-base flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed`}
 
   ${(props) => {
     switch (props.$variant) {

@@ -2,14 +2,18 @@
 import type { Metadata } from "next";
 
 import "./globals.css";
-import Favicon from "../public/favicon.ico";
 import RootLayout from "./RootLayout"; // Import the client component
 
 // ✅ Move `metadata` here
 export const metadata: Metadata = {
   title: "Fitarrito",
   description: "Mexican Food",
-  icons: [{ rel: "icon", url: Favicon.src, sizes: "32x32" }],
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+  },
 };
 
 // ✅ Wrap everything in RootLayout

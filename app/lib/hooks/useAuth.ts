@@ -15,29 +15,82 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check if Supabase is properly configured
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey || 
+        supabaseUrl.includes('placeholder') || 
+        supabaseKey.includes('placeholder')) {
+      // Supabase not configured - skip auth initialization
+      console.warn("Supabase not configured. Skipping authentication initialization.");
+      dispatch(setLoading(false));
+      return;
+    }
+
+    // Get initial session with better error handling
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (mounted) {
-        dispatch(setSession(session));
-        dispatch(setUser(session?.user ?? null));
+        if (error) {
+          // Log error but don't throw - auth is optional
+          console.warn("Session check returned error (non-critical):", error.message || error);
+        } else {
+          dispatch(setSession(session));
+          dispatch(setUser(session?.user ?? null));
+        }
+        dispatch(setLoading(false));
+      }
+    }).catch((error) => {
+      // Gracefully handle auth errors (e.g., network issues, misconfigured Supabase)
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Only log if it's not a placeholder/configuration issue
+      if (!errorMessage.includes('placeholder') && !errorMessage.includes('Failed to fetch')) {
+        console.warn("Failed to get initial session (non-critical):", errorMessage);
+      }
+      if (mounted) {
         dispatch(setLoading(false));
       }
     });
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for auth changes with better error handling
+    let subscription: { unsubscribe: () => void } | null = null;
+    try {
+      // Wrap the callback to catch any errors that might occur during auth state changes
+      const authStateChangeResult = supabase.auth.onAuthStateChange((_event, session) => {
+        try {
+          if (mounted) {
+            dispatch(setSession(session));
+            dispatch(setUser(session?.user ?? null));
+            dispatch(setLoading(false));
+          }
+        } catch (callbackError) {
+          // Catch errors in the callback itself
+          const errorMessage = callbackError instanceof Error ? callbackError.message : String(callbackError);
+          if (!errorMessage.includes('placeholder') && !errorMessage.includes('Failed to fetch')) {
+            console.warn("Error in auth state change callback (non-critical):", errorMessage);
+          }
+        }
+      });
+      
+      // onAuthStateChange returns { data: { subscription } }
+      if (authStateChangeResult?.data?.subscription) {
+        subscription = authStateChangeResult.data.subscription;
+      }
+    } catch (error) {
+      // Catch any synchronous errors during setup
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Suppress "Failed to fetch" errors when Supabase is misconfigured
+      if (!errorMessage.includes('placeholder') && !errorMessage.includes('Failed to fetch')) {
+        console.warn("Failed to set up auth state listener (non-critical):", errorMessage);
+      }
       if (mounted) {
-        dispatch(setSession(session));
-        dispatch(setUser(session?.user ?? null));
         dispatch(setLoading(false));
       }
-    });
+    }
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, [dispatch]);
 

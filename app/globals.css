@@ -12,13 +12,20 @@
   --background-rgb: 12, 12, 12;
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  /* background: linear-gradient(to right, #f5b5b5 0%, #fafbff 100%) !important;
+   */
+
+  background-attachment: fixed;
+  min-height: 100vh;
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-
 }
 * {
   box-sizing: border-box;

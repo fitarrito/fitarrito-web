@@ -21,15 +21,20 @@
 
 Create a file named `.env.local` in your project root with:
 
-```env
+``env1`
+
 # Database Connection
+
 # Replace [YOUR-PASSWORD] with your actual database password
+
 DATABASE_URL="postgresql://postgres.dvscirnbbmuaiukzhmnu:[YOUR-PASSWORD]@aws-1-ap-south-1.pooler.supabase.com:6543/postgres"
 
 # Supabase API Keys
+
 NEXT_PUBLIC_SUPABASE_URL="https://dvscirnbbmuaiukzhmnu.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key-here"
-```
+
+````
 
 **Important:** Replace:
 
@@ -40,7 +45,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key-here"
 
 ```bash
 yarn install
-```
+````
 
 ### Step 4: Generate Prisma Client
 

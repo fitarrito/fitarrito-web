@@ -159,7 +159,31 @@ const Header: React.FC = () => {
     <header className="sticky top-0 z-50">
       <div
         ref={navRef}
-        className={`fixed top-0 left-0 z-50 w-full items-center bg-white`}
+        className={`fixed top-0 left-0 z-50 w-full items-center`}
+        style={{
+          background: `
+            radial-gradient(
+              circle at 15% 20%,
+              rgba(250, 228, 228, 0.9) 0%,
+              transparent 45%
+            ),
+            radial-gradient(
+              circle at 85% 25%,
+              rgba(224, 242, 254, 0.9) 0%,
+              transparent 45%
+            ),
+            radial-gradient(
+              circle at 30% 80%,
+              rgba(255, 241, 242, 0.9) 0%,
+              transparent 50%
+            ),
+            linear-gradient(
+              to right,
+              #f8f6dbe5 0%,
+              #fafbff 100%
+            )
+          `,
+        }}
       >
         {/* Hintergrund für das aufklappbare Menü */}
 
